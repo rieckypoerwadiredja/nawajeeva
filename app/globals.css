@@ -1,26 +1,113 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* =========================
+     Brand Colors (Logo-aligned)
+     ========================= */
+  --brand-green: #2b8a3e; /* Primary */
+  --brand-blue: #1c7ed6; /* Secondary */
+
+  /* Brand Tints (for subtle UI surfaces) */
+  --brand-green-soft: #e6f4ea;
+  --brand-blue-soft: #e7f5ff;
+
+  /* =========================
+     Neutrals (UI Foundation)
+     ========================= */
+  --background: #fbf7f9;
+  --secondary-background: #eaeee5;
+  --surface: #fbf7f9;
+  --border: rgba(0, 0, 0, 0.1);
+
+  /* Text */
+  --text-primary: #1f2937; /* Main text (neutral, high contrast) */
+  --text-secondary: #2b8a3e; /* Brand green for emphasis */
+  --text-third: #1c7ed6; /* Brand blue for links/accents */
+  --text-muted: #afb3bb; /* Secondary text */
+  --text-subtle: #9ca3af; /* Placeholder / helper */
+
+  /* =========================
+     Functional / Status
+     ========================= */
+  --success: #2b8a3e;
+  --info: #1c7ed6;
+  --warning: #f59f00;
+  --danger: #e03131;
+  --muted: #afb3bb;
+
+  /* =========================
+     Buttons
+     ========================= */
+  --button-primary-bg: var(--brand-green);
+  --button-primary-hover: #237236;
+  --button-primary-text: #ffffff;
+
+  --button-secondary-bg: var(--brand-blue);
+  --button-secondary-hover: #1971c2;
+  --button-secondary-text: #ffffff;
+
+  --button-ghost-bg: transparent;
+  --button-ghost-hover: rgba(0, 0, 0, 0.05);
+
+  /* =========================
+     Focus / Ring / Shadow
+     ========================= */
+  --focus-ring: rgba(28, 126, 214, 0.35); /* Blue ring (clean + accessible) */
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
 @theme inline {
+  /* Backgrounds / Surfaces */
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-secondary-background: var(--secondary-background);
+  --color-surface: var(--surface);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Brand */
+  --color-primary: var(--brand-green);
+  --color-secondary: var(--brand-blue);
+  --color-primary-soft: var(--brand-green-soft);
+  --color-secondary-soft: var(--brand-blue-soft);
+  --color-muted: var(--muted);
+
+  /* Borders / Effects */
+  --color-border: var(--border);
+  --color-focus-ring: var(--focus-ring);
+
+  /* Text system (professional naming) */
+  --color-text-primary: var(--text-primary); /* neutral black/gray */
+  --color-text-secondary: var(--text-secondary); /* green emphasis */
+  --color-text-third: var(--text-third); /* blue accent */
+  --color-text-muted: var(--text-muted);
+  --color-text-subtle: var(--text-subtle);
+
+  /* Status */
+  --color-success: var(--success);
+  --color-info: var(--info);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+
+  /* Buttons */
+  --color-button-primary-bg: var(--button-primary-bg);
+  --color-button-primary-hover: var(--button-primary-hover);
+  --color-button-primary-text: var(--button-primary-text);
+
+  --color-button-secondary-bg: var(--button-secondary-bg);
+  --color-button-secondary-hover: var(--button-secondary-hover);
+  --color-button-secondary-text: var(--button-secondary-text);
+
+  --color-button-ghost-bg: var(--button-ghost-bg);
+  --color-button-ghost-hover: var(--button-ghost-hover);
+
+  /* Legacy compatibility (if your components still use these) */
+  --color-primary-font: var(--text-primary);
+  --color-secondary-font: var(--text-secondary);
+  --color-third-font: var(--text-third);
+  --color-unapproved: var(--danger);
+  --color-approved: var(--success);
+  --color-cancel: var(--danger);
 }
 
 body {
   background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text-primary);
 }
