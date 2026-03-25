@@ -1,8 +1,9 @@
 import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
-import Footer from "./components/fragments/Footer";
-import Header from "./components/fragments/Header";
-import { IMAGES } from "./constants/images";
+import Footer from "@/app/components/fragments/Footer";
+import Header from "@/app/components/fragments/Header";
+import { IMAGES } from "@/app/constants/images";
+import AuthProvider from "@/app/components/AuthProvider";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -26,12 +27,14 @@ export default function RootLayout({ children }) {
       <body
         className={`bg-background min-h-screen text-primary-font ${poppins.variable} antialiased`}
       >
-        <Header />
+        <AuthProvider>
+          <Header />
 
-        <main className="px-8 py-12 min-h-screen flex flex-col space-y-6 mt-15">
-          {children}
-        </main>
-        <Footer />
+          <main className="px-8 py-12 min-h-screen flex flex-col space-y-6 mt-15">
+            {children}
+          </main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );

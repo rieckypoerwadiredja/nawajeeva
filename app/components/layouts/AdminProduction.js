@@ -1,42 +1,177 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
-import Header from "../fragments/Header";
+import React, { useState } from "react";
 import { TitleSection } from "../fragments/Text";
 import LayoutWithSidebar from "./LayoutWithSidebar";
 import { GeneralCard } from "../fragments/Cards";
-import { ADMIN_TABS, ROLES_FILTER } from "@/app/constants/filters";
-import { GeneralButton, StatusPill, TabsButton } from "../elements/Button";
+import { ADMIN_TABS, ROLES_FILTER } from "../../constants/filters";
+import { GeneralButton, TabsButton } from "../elements/Button";
 import { SelectOptions } from "../elements/Filters";
 import FormField from "../elements/Form";
-import { UPDATE_USER_FORM } from "@/app/constants/forms";
-import { USERS_DUMMY } from "@/app/constants/dummy";
+import { CREATE_USER_FORM, UPDATE_USER_FORM } from "../../constants/forms";
 import { FaPlus, FaRegEdit } from "react-icons/fa";
 import AvatarMini from "../elements/AvatarMini";
+import useFetch from "@/app/hooks/useFetch";
+import { API_BASE_URL } from "@/app/constants/env";
+import callApi from "@/app/utils/callApi";
+import Message from "../elements/Message";
 
 export default function AdminProduction() {
-  const [activeTab, setActiveTab] = useState("klapanunggal");
-  const activeLocation = ADMIN_TABS.find((tab) => tab.key === activeTab)?.label;
   const [role, setRole] = useState("all");
+  const [activeTab, setActiveTab] = useState("klapanunggal");
 
+  const {
+    data: users,
+    loading,
+    error,
+    refetch,
+  } = useFetch({
+    url: `${API_BASE_URL}/users?role=${role}&greenhouse=${activeTab}`,
+    deps: [activeTab, role],
+  });
+
+  const activeLocation = ADMIN_TABS.find((tab) => tab.key === activeTab)?.label;
+
+  // ======== EDIT USER STATE ========
   const [selectedUser, setSelectedUser] = useState(null);
-  const [formValues, setFormValues] = useState({
+  const [submitting, setSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState(null);
+
+  const initialFormValues = {
     name: "",
     email: "",
     role: "",
+    status: "",
     password: "",
-  });
+  };
 
-  const [rows, setRows] = useState(USERS_DUMMY);
+  const [formValues, setFormValues] = useState(initialFormValues);
 
-  const handlePickUser = (row) => {
-    setSelectedUser(row);
+  const handlePickUser = (user) => {
+    setSelectedUser(user);
+    setSubmitMessage(null);
     setFormValues({
-      name: row.name ?? "",
-      email: row.email ?? "",
-      role: row.role ?? "",
-      password: row.password ?? "",
+      name: user.name ?? "",
+      email: user.email ?? "",
+      role: user.role?.name ?? "",
+      status: user.status?.name ?? "",
+      password: "",
     });
+  };
+
+  const handleCancel = () => {
+    setSelectedUser(null);
+    setFormValues(initialFormValues);
+    setSubmitMessage(null);
+  };
+
+  const handleUpdateUser = async (e) => {
+    e.preventDefault();
+    if (!selectedUser) return;
+
+    setSubmitting(true);
+    setSubmitMessage(null);
+
+    try {
+      const payload = {
+        id: selectedUser.id,
+        name: formValues.name,
+        email: formValues.email,
+        role: formValues.role,
+        status: formValues.status,
+      };
+
+      if (formValues.password && formValues.password.trim() !== "") {
+        payload.password = formValues.password;
+      }
+
+      const response = await callApi({
+        url: `${API_BASE_URL}/users`,
+        method: "PUT",
+        body: payload,
+      });
+
+      if (response.status === "error") {
+        throw new Error(response.message || "Gagal mengupdate user");
+      }
+
+      setSubmitMessage({ type: "success", text: "User berhasil diperbarui!" });
+      await refetch();
+      setSelectedUser(null);
+      setFormValues(initialFormValues);
+    } catch (err) {
+      setSubmitMessage({
+        type: "error",
+        text: err.message || "Gagal mengupdate user",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // ======== CREATE USER STATE ========
+  const initialCreateFormValues = {
+    name: "",
+    email: "",
+    role: "",
+    greenhouses: [],
+    password: "",
+  };
+
+  const [createFormValues, setCreateFormValues] = useState(
+    initialCreateFormValues,
+  );
+  const [creating, setCreating] = useState(false);
+  const [createMessage, setCreateMessage] = useState(null);
+
+  const handleCreateUser = async (e) => {
+    e.preventDefault();
+    setCreating(true);
+    setCreateMessage(null);
+
+    try {
+      if (
+        !createFormValues.name ||
+        !createFormValues.email ||
+        !createFormValues.password ||
+        !createFormValues.role ||
+        !createFormValues.greenhouses ||
+        createFormValues.greenhouses.length === 0
+      ) {
+        throw new Error("Semua field wajib diisi");
+      }
+
+      const response = await callApi({
+        url: `${API_BASE_URL}/users`,
+        method: "POST",
+        body: {
+          name: createFormValues.name,
+          email: createFormValues.email,
+          password: createFormValues.password,
+          role: createFormValues.role,
+          greenhouses: createFormValues.greenhouses,
+        },
+      });
+
+      if (response.status === "error") {
+        throw new Error(response.message || "Gagal membuat user");
+      }
+
+      setCreateMessage({
+        type: "success",
+        text: "User baru berhasil ditambahkan!",
+      });
+
+      await refetch();
+      setCreateFormValues(initialCreateFormValues);
+    } catch (err) {
+      setCreateMessage({
+        type: "error",
+        text: err.message || "Gagal membuat user",
+      });
+    } finally {
+      setCreating(false);
+    }
   };
 
   return (
@@ -68,6 +203,7 @@ export default function AdminProduction() {
                   <SelectOptions
                     defaultValue="all"
                     label="Role"
+                    value={role}
                     onChange={(e) => setRole(e.target.value)}
                     options={ROLES_FILTER}
                   />
@@ -80,38 +216,42 @@ export default function AdminProduction() {
                 </div>
               </div>
 
-              <div className="flex flex-col">
-                {rows
-                  .filter((row) => row.locationId === activeTab)
-                  .filter((row) => (role === "all" ? row : row.role === role))
-                  .map((row) => (
-                    <div
-                      key={row.email}
-                      onClick={() => handlePickUser(row)}
-                      className={`border-y border-border grid grid-cols-12 items-center gap-0 px-4 py-4 text-sm cursor-pointer hover:bg-black/5 ${
-                        selectedUser?.email === row.email
-                          ? "bg-black/5 cursor-pointer"
-                          : ""
-                      }`}
-                    >
-                      <div className="col-span-6 flex items-center gap-3">
-                        <AvatarMini name="Siti Nuraisyah Gunawan" />
-                        <div className="min-w-0">
-                          <div className="font-semibold">{row.name}</div>
-                          <div className="truncate text-xs">{row.email}</div>
-                        </div>
-                      </div>
-
-                      <div className="col-span-5">
-                        <div className="font-semibold">{row.role}</div>
-                        <div className="text-xs">{row.roleSub}</div>
-                      </div>
-
-                      <div className="col-span-1 items-end">
-                        <FaRegEdit />
+              <div className="flex flex-col min-h-[50vh]">
+                {loading && <p className="text-center">Loading...</p>}
+                {error && <p className="text-center">Error: {error.message}</p>}
+                {users?.map((user) => (
+                  <div
+                    key={user.email}
+                    onClick={() => handlePickUser(user)}
+                    className={`w-full border-y border-border grid grid-cols-12 items-center gap-0 px-4 py-4 text-sm cursor-pointer hover:bg-black/5 ${
+                      selectedUser?.email === user.email
+                        ? "bg-black/5 cursor-pointer"
+                        : ""
+                    }`}
+                  >
+                    <div className="col-span-5 flex items-center gap-3">
+                      <AvatarMini name={user.name} />
+                      <div className="min-w-0">
+                        <div className="font-semibold">{user.name}</div>
+                        <div className="truncate text-xs">{user.email}</div>
                       </div>
                     </div>
-                  ))}
+
+                    <div className="col-span-3">
+                      <div className="font-semibold">{user.role.name}</div>
+                      <div className="text-xs max-w-[200px] break-words">
+                        {user.greenhouse_access
+                          .map((greenhouse) => greenhouse.greenhouse.name)
+                          .join(", ")}
+                      </div>
+                    </div>
+                    <div className="col-span-3">{user.status.name}</div>
+
+                    <div className="col-span-1 items-end">
+                      <FaRegEdit />
+                    </div>
+                  </div>
+                ))}
               </div>
             </GeneralCard>
 
@@ -119,25 +259,26 @@ export default function AdminProduction() {
               title="Edit Pengelola"
               className="flex flex-col gap-y-6"
             >
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (!selectedUser) return; // block update kalau belum pilih user
+              {/* Status message */}
+              {submitMessage && (
+                <Message success={submitMessage.type === "success"}>
+                  {submitMessage.text}
+                </Message>
+              )}
 
-                  setRows((prev) =>
-                    prev.map((u) =>
-                      u.id === selectedUser.id ? { ...u, ...formValues } : u,
-                    ),
-                  );
-                }}
-                className="mt-5 space-y-4"
-              >
+              {!selectedUser && (
+                <p className="text-sm text-primary-font/50 italic">
+                  Pilih user dari daftar di atas untuk mengedit data.
+                </p>
+              )}
+
+              <form onSubmit={handleUpdateUser} className="mt-5 space-y-4">
                 {UPDATE_USER_FORM.map((field) => (
                   <FormField
                     key={field.id}
                     field={field}
                     value={formValues[field.name] ?? ""}
-                    disabled={!selectedUser}
+                    disabled={!selectedUser || submitting}
                     onChange={(val) =>
                       setFormValues((prev) => ({ ...prev, [field.name]: val }))
                     }
@@ -147,15 +288,16 @@ export default function AdminProduction() {
                 {/* NOTE: SUBMIT BUTTON */}
                 <div className="pt-2 flex gap-x-2 justify-end">
                   <GeneralButton
-                    type="submit"
+                    type="button"
                     label="Batal"
                     className="bg-muted hover:bg-muted"
-                    onClick={() => {}}
+                    onClick={handleCancel}
+                    disabled={!selectedUser || submitting}
                   />
                   <GeneralButton
                     type="submit"
-                    label="Kirim Laporan"
-                    onClick={() => {}}
+                    label={submitting ? "Menyimpan..." : "Simpan Perubahan"}
+                    disabled={!selectedUser || submitting}
                   />
                 </div>
               </form>
@@ -208,14 +350,48 @@ export default function AdminProduction() {
                   </div>
                 </div>
 
-                <div className="mb-2 text-sm font-bold text-[var(--color-text-primary)]/75">
+                <div className="mb-2 text-sm font-bold text-text-primary">
                   Total Grower & Water Assistant
                 </div>
-
-                <div className="mt-4 space-y-3">
-                  <GeneralButton icon={<FaPlus />} label="Tambah GR / WE" />
-                </div>
               </div>
+            </GeneralCard>
+
+            {/* CREATE USER FORM */}
+            <GeneralCard
+              title="Tambah User Baru"
+              className="flex flex-col gap-y-4"
+            >
+              {/* Create status message */}
+              {createMessage && (
+                <Message success={createMessage.type === "success"}>
+                  {createMessage.text}
+                </Message>
+              )}
+
+              <form onSubmit={handleCreateUser} className="space-y-4">
+                {CREATE_USER_FORM.map((field) => (
+                  <FormField
+                    key={field.id}
+                    field={field}
+                    value={createFormValues[field.name] ?? ""}
+                    disabled={creating}
+                    onChange={(val) =>
+                      setCreateFormValues((prev) => ({
+                        ...prev,
+                        [field.name]: val,
+                      }))
+                    }
+                  />
+                ))}
+                <div className="pt-2">
+                  <GeneralButton
+                    type="submit"
+                    icon={<FaPlus />}
+                    label={creating ? "Menyimpan..." : "Tambah User"}
+                    disabled={creating}
+                  />
+                </div>
+              </form>
             </GeneralCard>
           </>
         }

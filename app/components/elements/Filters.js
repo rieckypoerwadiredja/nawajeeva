@@ -26,7 +26,7 @@ export function SelectOptions({
           required={required}
         >
           {options.map((option, idx) => (
-            <option key={idx} value={option.key} disabled={option.disabled}>
+            <option key={idx} value={option.id} disabled={option.disabled}>
               {option.label}
             </option>
           ))}
@@ -45,7 +45,7 @@ export function SelectDate({
   customeDate,
   required = false,
   defaultValue,
-  rightIcon,
+  onChange,
 }) {
   return (
     <div className="flex gap-x-2 items-center text-base! text-secondary">
@@ -63,6 +63,7 @@ export function SelectDate({
           defaultValue={defaultValue}
           required={required}
           className={`w-full px-2 cursor-pointer bg-transparent font-semibold outline-none appearance-none ${customeDate}`}
+          onChange={(e) => onChange?.(e)}
         />
       </div>
     </div>

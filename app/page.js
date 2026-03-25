@@ -1,5 +1,5 @@
-import Home from "./components/layouts/Home";
+import Home from "@/app/components/layouts/Home";
 
-export default function page() {
+export default async function Page() {
   return <Home />;
 }

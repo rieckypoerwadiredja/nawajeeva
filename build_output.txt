@@ -1,0 +1,16 @@
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local, .env
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 8.1s
+  Running TypeScript ...
+  Collecting page data using 7 workers ...
+  Generating static pages using 7 workers (0/16) ...
+  Generating static pages using 7 workers (4/16) 
+  Generating static pages using 7 workers (8/16) 
+  Generating static pages using 7 workers (12/16) 
+Error occurred prerendering page "/auth/error". Read more: https://nextjs.org/docs/messages/prerender-error
+Error: The default export is not a React Component in "/auth/error/page"
+    at ignore-listed frames
+Export encountered an error on /auth/error/page: /auth/error, exiting the build.
+⨯ Next.js build worker exited with code: 1 and signal: null

@@ -1,10 +1,16 @@
 "use client";
-import { formatIDRThousands } from "@/app/utils/number";
-import React, { useState, useMemo, useRef } from "react";
+import { formatIDRThousands } from "../../utils/number";
+import React, { useMemo, useRef, useState } from "react";
 import { FaLock } from "react-icons/fa";
 import { FiUpload, FiX } from "react-icons/fi";
 
-export function SelectOptionsForm({ label, value, required = false, options }) {
+export function SelectOptionsForm({
+  label,
+  value,
+  required = false,
+  options = [],
+  onChange,
+}) {
   return (
     <div>
       <div className="mb-2">
@@ -13,9 +19,11 @@ export function SelectOptionsForm({ label, value, required = false, options }) {
       <div className="rounded-lg border border-black/10 bg-white px-4 py-3 shadow-sm">
         <select
           required={required}
-          value={value}
-          className={` w-full rounded px-2 py-1 cursor-pointer outline-0`}
+          value={value ?? ""}
+          onChange={(e) => onChange?.(e.target.value)}
+          className="w-full cursor-pointer rounded px-2 py-1 outline-0"
         >
+          <option value="">Pilih opsi</option>
           {options.map((option, index) => (
             <option value={option.value} className="cursor-pointer" key={index}>
               {option.label}
@@ -27,24 +35,33 @@ export function SelectOptionsForm({ label, value, required = false, options }) {
   );
 }
 
-export function PasswordForm({ label, value, required = false }) {
+export function PasswordForm({ label, value, required = false, onChange, disabled }) {
   return (
     <div>
       <div className="mb-2 text-xs font-semibold text-primary-font">
         {label}
         {required && <span className="text-cancel">*</span>}
       </div>
-      <div className="flex items-center justify-between rounded-md border border-[var(--color-border)] bg-white/60 px-3 py-2 text-sm text-[var(--color-text-primary)]/75 shadow-[var(--shadow-soft)]">
-        <span>{value}</span>
-        <span className="text-primary-font">
-          <FaLock />
-        </span>
-      </div>
+      <input
+        type="password"
+        value={value ?? ""}
+        onChange={(e) => onChange?.(e.target.value)}
+        required={required}
+        disabled={disabled}
+        placeholder="Masukkan password baru"
+        className="w-full rounded-lg border border-black/10 bg-white px-4 py-3 text-sm text-primary-font shadow-sm outline-none placeholder:text-primary-font/40 focus:border-primary/40 disabled:opacity-50 disabled:cursor-not-allowed"
+      />
     </div>
   );
 }
 
-export function TextAreaForm({ label, value, placeholder, required = false }) {
+export function TextAreaForm({
+  label,
+  value,
+  placeholder,
+  required = false,
+  onChange,
+}) {
   return (
     <div>
       <label className="mb-2 block text-sm font-semibold text-primary-font">
@@ -53,7 +70,8 @@ export function TextAreaForm({ label, value, placeholder, required = false }) {
       <textarea
         required={required}
         rows={4}
-        value={value}
+        value={value ?? ""}
+        onChange={(e) => onChange?.(e.target.value)}
         className="w-full resize-none rounded-lg border border-black/10 bg-white px-4 py-3 text-sm text-primary-font shadow-sm outline-none placeholder:text-primary-font/40 focus:border-primary/40"
         placeholder={placeholder}
       />
@@ -61,14 +79,21 @@ export function TextAreaForm({ label, value, placeholder, required = false }) {
   );
 }
 
-export function TextForm({ label, value, placeholder, required = false }) {
+export function TextForm({
+  label,
+  value,
+  placeholder,
+  required = false,
+  onChange,
+}) {
   return (
     <div>
       <label className="mb-2 block text-sm font-semibold text-primary-font">
         {label} {required ? <span className="text-unapproved">*</span> : null}
       </label>
       <input
-        value={value}
+        value={value ?? ""}
+        onChange={(e) => onChange?.(e.target.value)}
         required={required}
         type="text"
         className="w-full rounded-lg border border-black/10 bg-white px-4 py-3 text-sm text-primary-font shadow-sm outline-none placeholder:text-primary-font/40 focus:border-primary/40"
@@ -82,35 +107,27 @@ export function NumberForm({
   label,
   placeholder,
   required = false,
-  rightAddon, // contoh: "gram" | "Kg" | "Rp"
-  format = "plain", // "plain" | "thousand"
-  value, // optional (controlled) -> digit string, ex: "1000000"
-  onValueChange, // optional (controlled)
-  name, // optional, untuk form submit
+  rightAddon,
+  format = "plain",
+  value,
+  onChange,
+  name,
 }) {
   const [inner, setInner] = useState("");
 
-  const isControlled =
-    value !== undefined && typeof onValueChange === "function";
-  const raw = isControlled ? String(value ?? "") : inner; // simpan digit-only
+  const isControlled = typeof onChange === "function";
+  const raw = isControlled ? String(value ?? "") : inner;
 
   const display = useMemo(() => {
-    if (format !== "thousand") return raw; // plain: 1000000
-    return formatIDRThousands(raw); // thousand: 1.000.000
+    if (format !== "thousand") return raw;
+    return formatIDRThousands(raw);
   }, [raw, format]);
 
   const handleChange = (e) => {
-    if (format === "thousand") {
-      // ambil digit saja biar aman
-      const digitsOnly = e.target.value.replace(/\D/g, "");
-      if (isControlled) onValueChange(digitsOnly);
-      else setInner(digitsOnly);
-    } else {
-      // plain: boleh ketik angka normal, tapi kita tetap amankan ke digit-only
-      const digitsOnly = e.target.value.replace(/\D/g, "");
-      if (isControlled) onValueChange(digitsOnly);
-      else setInner(digitsOnly);
-    }
+    const digitsOnly = e.target.value.replace(/\D/g, "");
+
+    if (isControlled) onChange(digitsOnly);
+    else setInner(digitsOnly);
   };
 
   return (
@@ -122,11 +139,10 @@ export function NumberForm({
       <div className="relative">
         <input
           required={required}
-          // untuk thousand harus text supaya bisa tampil titik
-          type={format === "thousand" ? "text" : "text"}
+          type="text"
           inputMode="numeric"
           value={display}
-          // onChange={handleChange}
+          onChange={handleChange}
           placeholder={placeholder}
           className={[
             "w-full rounded-lg border border-black/10 bg-white px-4 py-3 text-sm text-primary-font shadow-sm outline-none placeholder:text-primary-font/40 focus:border-primary/40",
@@ -140,17 +156,21 @@ export function NumberForm({
           </span>
         ) : null}
 
-        {/* nilai mentah untuk submit form (digit-only) */}
         {name ? <input type="hidden" name={name} value={raw} /> : null}
       </div>
     </div>
   );
 }
 
-export function SelectDateForm({ label, required = false, customeDate }) {
+export function SelectDateForm({
+  label,
+  required = false,
+  customeDate,
+  value,
+  onChange,
+}) {
   return (
     <div>
-      {/* NOTE: FIELD - Date */}
       <div className="mb-2">
         {label} {required ? <span className="text-unapproved">*</span> : null}
       </div>
@@ -158,23 +178,26 @@ export function SelectDateForm({ label, required = false, customeDate }) {
         <input
           required={required}
           type="date"
-          className={`w-full rounded px-2 py-1 cursor-pointer outline-0 ${customeDate}`}
+          value={value ?? ""}
+          onChange={(e) => onChange?.(e.target.value)}
+          className={`w-full cursor-pointer rounded px-2 py-1 outline-0 ${customeDate ?? ""}`}
         />
       </div>
     </div>
   );
 }
 
-export function UploadFileForm({ label, required }) {
+export function UploadFileForm({ label, required, value, onChange }) {
   const [preview, setPreview] = useState(null);
   const [fileName, setFileName] = useState("");
   const inputRef = useRef(null);
 
   const handleChange = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
 
     setFileName(file.name);
+    onChange?.(file);
 
     if (file.type.startsWith("image/")) {
       const reader = new FileReader();
@@ -190,7 +213,8 @@ export function UploadFileForm({ label, required }) {
   const handleRemove = () => {
     setPreview(null);
     setFileName("");
-    inputRef.current.value = "";
+    onChange?.(null);
+    if (inputRef.current) inputRef.current.value = "";
   };
 
   return (
@@ -200,15 +224,13 @@ export function UploadFileForm({ label, required }) {
       </label>
 
       <div className="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
-        {/* Hidden Input */}
         <input
           type="file"
           ref={inputRef}
-          // onChange={handleChange}
+          onChange={handleChange}
           className="hidden"
         />
 
-        {/* Preview Area */}
         {preview && (
           <div className="relative my-4 w-fit">
             <img
@@ -220,7 +242,7 @@ export function UploadFileForm({ label, required }) {
             <button
               type="button"
               onClick={handleRemove}
-              className="absolute -top-2 -right-2 rounded-full bg-cancel p-1 text-white cursor-pointer shadow hover:bg-cancel"
+              className="absolute -top-2 -right-2 cursor-pointer rounded-full bg-cancel p-1 text-white shadow hover:bg-cancel"
             >
               <FiX size={14} />
             </button>
@@ -233,17 +255,16 @@ export function UploadFileForm({ label, required }) {
             <button
               type="button"
               onClick={handleRemove}
-              className="text-cancel cursor-pointer hover:text-cancel"
+              className="cursor-pointer text-cancel hover:text-cancel"
             >
               <FiX size={16} />
             </button>
           </div>
         )}
 
-        {/* Upload Button */}
         <button
           type="button"
-          onClick={() => inputRef.current.click()}
+          onClick={() => inputRef.current?.click()}
           className="flex cursor-pointer items-center gap-2 rounded-md bg-secondary px-4 py-2 text-sm font-medium text-white transition hover:bg-secondary/90"
         >
           <FiUpload size={16} />
@@ -254,9 +275,65 @@ export function UploadFileForm({ label, required }) {
   );
 }
 
-export default function FormField({ field, value, onChange }) {
+export function CheckboxGroupForm({
+  label,
+  options = [],
+  value = [],
+  required = false,
+  onChange,
+  disabled,
+}) {
+  const handleToggle = (optionValue) => {
+    if (disabled) return;
+    const current = Array.isArray(value) ? value : [];
+    const updated = current.includes(optionValue)
+      ? current.filter((v) => v !== optionValue)
+      : [...current, optionValue];
+    onChange?.(updated);
+  };
+
+  return (
+    <div>
+      <label className="mb-2 block text-sm font-semibold text-primary-font">
+        {label} {required ? <span className="text-unapproved">*</span> : null}
+      </label>
+      <div className="rounded-lg border border-black/10 bg-white px-4 py-3 shadow-sm space-y-2">
+        {options.map((option) => (
+          <label
+            key={option.value}
+            className={`flex items-center gap-3 cursor-pointer rounded-md px-2 py-2 text-sm hover:bg-black/5 transition ${
+              disabled ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={Array.isArray(value) && value.includes(option.value)}
+              onChange={() => handleToggle(option.value)}
+              disabled={disabled}
+              className="h-4 w-4 rounded border-gray-300 accent-primary cursor-pointer"
+            />
+            <span>{option.label}</span>
+          </label>
+        ))}
+        {options.length === 0 && (
+          <p className="text-sm text-primary-font/40 italic">Tidak ada opsi</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default function FormField({ field, value, onChange, disabled }) {
   if (field.type === "date") {
-    return <SelectDateForm label={field.label} required={field.required} />;
+    return (
+      <SelectDateForm
+        label={field.label}
+        value={value}
+        onChange={onChange}
+        required={field.required}
+        disabled={disabled}
+      />
+    );
   }
 
   if (field.type === "text") {
@@ -267,6 +344,7 @@ export default function FormField({ field, value, onChange }) {
         onChange={onChange}
         required={field.required}
         placeholder={field.placeholder}
+        disabled={disabled}
       />
     );
   }
@@ -281,6 +359,7 @@ export default function FormField({ field, value, onChange }) {
         format={field.format}
         rightAddon={field.rightAddon}
         placeholder={field.placeholder}
+        disabled={disabled}
       />
     );
   }
@@ -293,12 +372,21 @@ export default function FormField({ field, value, onChange }) {
         onChange={onChange}
         required={field.required}
         options={field.options}
+        disabled={disabled}
       />
     );
   }
 
   if (field.type === "upload") {
-    return <UploadFileForm label={field.label} required={field.required} />;
+    return (
+      <UploadFileForm
+        label={field.label}
+        required={field.required}
+        value={value}
+        onChange={onChange}
+        disabled={disabled}
+      />
+    );
   }
 
   if (field.type === "textarea") {
@@ -309,6 +397,7 @@ export default function FormField({ field, value, onChange }) {
         onChange={onChange}
         placeholder={field.placeholder}
         required={field.required}
+        disabled={disabled}
       />
     );
   }
@@ -319,8 +408,21 @@ export default function FormField({ field, value, onChange }) {
         label={field.label}
         value={value}
         onChange={onChange}
-        placeholder={field.placeholder}
         required={field.required}
+        disabled={disabled}
+      />
+    );
+  }
+
+  if (field.type === "checkbox-group") {
+    return (
+      <CheckboxGroupForm
+        label={field.label}
+        value={value}
+        onChange={onChange}
+        required={field.required}
+        options={field.options}
+        disabled={disabled}
       />
     );
   }

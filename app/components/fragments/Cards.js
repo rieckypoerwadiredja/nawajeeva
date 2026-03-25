@@ -2,9 +2,12 @@
 
 import Image from "next/image";
 import React, { useState } from "react";
-import { ApproveButton } from "../elements/Button";
+import { DropdownButton } from "../elements/Button";
 import AvatarMini from "../elements/AvatarMini";
 import { RiCloseLine } from "react-icons/ri";
+import { formatDate, formatWIB } from "@/app/utils/number";
+import { REPORT_STATUS } from "@/app/constants/type";
+import callApi from "@/app/utils/callApi";
 
 export function GeneralCard({ title, className, children }) {
   return (
@@ -22,18 +25,38 @@ export function GeneralCard({ title, className, children }) {
     </div>
   );
 }
-export function ReportCard({ data }) {
+export function ReportCard({ data, refetchReports }) {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [zoom, setZoom] = useState(1);
+  const [statusReport, setStatusReport] = useState(data.approved.status.code);
+
+  const handleStatusChange = async (key) => {
+    setStatusReport(key);
+
+    try {
+      const response = await callApi({
+        url: `/api/reports/${data.id}/approvement`,
+        method: "PUT",
+        body: { status: key, type: data.type },
+      });
+
+      alert(response.message);
+      await refetchReports();
+    } catch (err) {
+      alert(err.message);
+      setStatusReport(data.approved.status.code);
+    }
+  };
 
   return (
     <GeneralCard className="relative">
       {/* Approve button */}
       <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
-        <ApproveButton
-          isApproved={data.approved.status}
-          onApproved={(status) => {
-            console.log("status", status);
+        <DropdownButton
+          value={statusReport}
+          options={REPORT_STATUS}
+          onSelect={(key) => {
+            handleStatusChange(key);
           }}
         />
       </div>
@@ -41,22 +64,28 @@ export function ReportCard({ data }) {
       {/* Header */}
       <div className="pr-14 sm:pr-16 flex items-center gap-x-3">
         <AvatarMini name={data.reportedBy} size={40} />
-        <div>
+        <div className="capitalize">
           <div className="text-base sm:text-xl font-semibold text-primary break-words">
-            Greenhouse ID: {data.greenhouseId} - {data.location}
+            Greenhouse: {data.greenhouseId} - {data.location}
           </div>
 
           <div className="mt-1 text-xs sm:text-sm text-muted break-words">
-            Reported by: {data.reportedBy} ({data.reportedTitle}), Time:{" "}
-            {data.time}
+            Reported by: {data.reportedBy} | Report Date:{" "}
+            {formatDate(data.time)} | Reported At: {formatWIB(data.createdAt)}
           </div>
         </div>
       </div>
 
       {/* Content */}
       <div className="mt-4">
-        <div className="font-semibold text-sm sm:text-base text-color-text-third break-words">
-          {data.reportTitle}: {data.reportContent}
+        <div className="font-semibold gap-y-2 text-sm sm:text-base text-color-text-third break-words">
+          <p className="capitalize text-base sm:text-base font-semibold text-primary break-words">
+            {data.reportTitle}
+          </p>
+          <div
+            className="font-normal!"
+            dangerouslySetInnerHTML={{ __html: data.reportContent }}
+          />
         </div>
 
         {/* Image Area */}
@@ -71,8 +100,8 @@ export function ReportCard({ data }) {
                   src={data.image}
                   alt="Report Image"
                   fill
-                  sizes="340px"
-                  className="object-cover"
+                  className="object-cover rounded-lg"
+                  unoptimized
                 />
               </div>
 
@@ -104,6 +133,7 @@ export function ReportCard({ data }) {
                       height={800}
                       className="object-contain transition-transform duration-200"
                       style={{ transform: `scale(${zoom})` }}
+                      unoptimized
                     />
 
                     <button
@@ -120,7 +150,7 @@ export function ReportCard({ data }) {
               )}
             </>
           ) : (
-            <div className="w-full max-w-[300px] aspect-square rounded-lg border border-dashed border-color-border bg-color-secondary-soft flex items-center justify-center text-sm text-color-text-muted">
+            <div className="mt-3 text-sm sm:text-base text-color-text-primary break-words">
               No Image
             </div>
           )}

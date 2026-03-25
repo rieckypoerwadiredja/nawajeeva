@@ -35,6 +35,13 @@
   --danger: #e03131;
   --muted: #afb3bb;
 
+  /* ========================
+     REPORT STATUS
+     ========================= */
+  --submitted: #3b82f6;
+  --approved: #22c55e;
+  --rejected: #ef4444;
+  --revised: #f59e0b;
   /* =========================
      Buttons
      ========================= */
@@ -85,6 +92,12 @@
   --color-info: var(--info);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
+
+  /* report status */
+  --color-submitted: var(--submitted);
+  --color-approved: var(--approved);
+  --color-rejected: var(--rejected);
+  --color-revised: var(--revised);
 
   /* Buttons */
   --color-button-primary-bg: var(--button-primary-bg);

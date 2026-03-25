@@ -4,11 +4,14 @@ import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { IMAGES } from "@/app/constants/images";
+import { useSession, signOut } from "next-auth/react";
+import { IMAGES } from "../../constants/images";
 import AvatarMini from "../elements/AvatarMini";
+import { GeneralButton } from "../elements/Button";
 
 function Header() {
   const pathname = usePathname();
+  const { data: session, status } = useSession();
   const [activeLink, setActiveLink] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -94,11 +97,30 @@ function Header() {
 
       {/* RIGHT: User + Mobile Menu Button */}
       <div className="flex items-center gap-2">
-        <span className="hidden whitespace-nowrap text-sm font-medium text-text-primary sm:inline">
-          Aj - Area Manager
-        </span>
-
-        <AvatarMini name="Aji Setiawan" size={40} />
+        {status === "authenticated" && (
+          <>
+            <span className="hidden whitespace-nowrap text-sm font-medium text-text-primary sm:inline">
+              {session?.user?.name || "User"}
+            </span>
+            <AvatarMini name={session?.user?.name || "User"} size={40} />
+            <button
+              onClick={() => signOut({ callbackUrl: "/auth/signin" })}
+              className="hidden md:inline-flex items-center justify-center rounded-md border border-border bg-surface px-3 py-1.5 text-sm font-medium text-red-600 transition hover:bg-red-50"
+            >
+              Sign out
+            </button>
+          </>
+        )}
+        {status !== "authenticated" && (
+          <>
+            <Link
+              href="/auth/signin"
+              className="hidden md:inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium text-white transition bg-primary"
+            >
+              Sign in
+            </Link>
+          </>
+        )}
 
         {/* Mobile hamburger */}
         <button
@@ -149,11 +171,21 @@ function Header() {
           </ul>
 
           <div className="px-4 pb-4 pt-2 border-t border-border">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-text-primary">
-                Aj - Area Manager
-              </span>
-            </div>
+            {status === "authenticated" && (
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-text-primary">
+                    {session?.user?.name || "User"}
+                  </span>
+                </div>
+                <button
+                  onClick={() => signOut({ callbackUrl: "/signin" })}
+                  className="w-full text-left rounded-md px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50"
+                >
+                  Sign out
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

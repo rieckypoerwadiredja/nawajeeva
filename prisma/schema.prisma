@@ -1,0 +1,244 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model user {
+  id        Int      @id @unique @default(autoincrement())
+  code      String   @unique
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  statusId Int
+  status   employee_status @relation(fields: [statusId], references: [id])
+
+  greenhouse_access greenhouse_access[]
+
+  roleId Int
+  role   role @relation(fields: [roleId], references: [id])
+
+  report_micro_climate_created_by          report_micro_climate[]          @relation("CreatedBy")
+  report_death_plant_vegetative_created_by report_death_plant_vegetative[] @relation("CreatedBy")
+  report_death_plant_generative_created_by report_death_plant_generative[] @relation("CreatedBy")
+  report_nutrition_usage_created_by        report_nutrition_usage[]        @relation("CreatedBy")
+
+  report_micro_climate_approved_by          report_micro_climate[]          @relation("ApprovedBy")
+  report_death_plant_vegetative_approved_by report_death_plant_vegetative[] @relation("ApprovedBy")
+  report_death_plant_generative_approved_by report_death_plant_generative[] @relation("ApprovedBy")
+  report_nutrition_usage_approved_by        report_nutrition_usage[]        @relation("ApprovedBy")
+}
+
+model greenhouse_access {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  greenhouseId Int
+  createdAt    DateTime @default(now())
+
+  user       user       @relation(fields: [userId], references: [id])
+  greenhouse greenhouse @relation(fields: [greenhouseId], references: [id])
+
+  @@unique([userId, greenhouseId])
+}
+
+model role {
+  id        Int      @id @unique @default(autoincrement())
+  code      String   @unique
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user user[]
+}
+
+model location {
+  id        Int      @id @unique @default(autoincrement())
+  code      String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  greenhouse                    greenhouse[]
+  report_death_plant_vegetative report_death_plant_vegetative[]
+  report_death_plant_generative report_death_plant_generative[]
+  report_micro_climate          report_micro_climate[]
+  report_nutrition_usage        report_nutrition_usage[]
+}
+
+model greenhouse {
+  id        Int      @id @unique @default(autoincrement())
+  code      String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userAccess greenhouse_access[]
+
+  locationId Int
+  location   location @relation(fields: [locationId], references: [id])
+
+  report_micro_climate          report_micro_climate[]
+  report_death_plant_vegetative report_death_plant_vegetative[]
+  report_death_plant_generative report_death_plant_generative[]
+  report_nutrition_usage        report_nutrition_usage[]
+}
+
+model report_micro_climate {
+  id          Int      @id @unique @default(autoincrement())
+  temperature Float
+  humidity    Float
+  light       Float
+  date        DateTime
+  note        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  statusId Int
+  status   report_status @relation(fields: [statusId], references: [id])
+
+  createdById  Int
+  createdBy    user @relation("CreatedBy", fields: [createdById], references: [id])
+
+  approvedById Int?
+  approvedBy   user? @relation("ApprovedBy", fields: [approvedById], references: [id])
+
+  greenhouseId Int
+  greenhouse   greenhouse @relation(fields: [greenhouseId], references: [id])
+
+  locationId Int
+  location   location @relation(fields: [locationId], references: [id])
+}
+
+model report_death_plant_vegetative {
+  id             Int      @id @unique @default(autoincrement())
+  title          String
+  reason         String
+  deadPlantCount Int
+  date           DateTime
+  note           String
+  photo          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  statusId Int
+  status   report_status @relation(fields: [statusId], references: [id])
+
+  createdById Int
+  createdBy   user @relation("CreatedBy", fields: [createdById], references: [id])
+
+  approvedById Int?
+  approvedBy   user? @relation("ApprovedBy", fields: [approvedById], references: [id])
+
+  greenhouseId Int
+  greenhouse   greenhouse @relation(fields: [greenhouseId], references: [id])
+
+  locationId Int
+  location   location @relation(fields: [locationId], references: [id])
+}
+
+model report_death_plant_generative {
+  id          Int      @id @unique @default(autoincrement())
+  title       String
+  reason      String
+  fruitWeight Float
+  date        DateTime
+  photo       String?
+  note        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  statusId Int
+  status   report_status @relation(fields: [statusId], references: [id])
+
+  createdById Int
+  createdBy   user @relation("CreatedBy", fields: [createdById], references: [id])
+
+  approvedById Int?
+  approvedBy   user? @relation("ApprovedBy", fields: [approvedById], references: [id])
+
+  greenhouseId Int
+  greenhouse   greenhouse @relation(fields: [greenhouseId], references: [id])
+
+  locationId Int
+  location   location @relation(fields: [locationId], references: [id])
+}
+
+model nutrition_brand {
+  id        Int      @id @unique @default(autoincrement())
+  code      String   @unique
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  typeId Int
+  type   nutrition_type @relation(fields: [typeId], references: [id])
+
+  report_nutrition_usage report_nutrition_usage[]
+}
+
+model report_nutrition_usage {
+  id        Int      @id @unique @default(autoincrement())
+  quantity  Int
+  date      DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  note      String?
+
+
+  statusId Int
+  status   report_status @relation(fields: [statusId], references: [id])
+
+  createdById Int
+  createdBy   user @relation("CreatedBy", fields: [createdById], references: [id])
+
+  approvedById Int?
+  approvedBy   user? @relation("ApprovedBy", fields: [approvedById], references: [id])
+
+  nutrition_brandId Int
+  brand             nutrition_brand @relation(fields: [nutrition_brandId], references: [id])
+
+  locationId Int
+  location   location @relation(fields: [locationId], references: [id])
+
+  greenhouseId Int
+  greenhouse   greenhouse @relation(fields: [greenhouseId], references: [id])
+}
+
+model report_status {
+  id        Int      @id @unique @default(autoincrement())
+  code      String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  report_micro_climate          report_micro_climate[]
+  report_death_plant_vegetative report_death_plant_vegetative[]
+  report_death_plant_generative report_death_plant_generative[]
+  report_nutrition_usage        report_nutrition_usage[]
+}
+
+model nutrition_type {
+  id        Int      @id @unique @default(autoincrement())
+  code      String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  nutrition_brand        nutrition_brand[]
+}
+
+model employee_status {
+  id        Int      @id @unique @default(autoincrement())
+  code      String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user user[]
+}

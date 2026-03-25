@@ -13,7 +13,7 @@ export function GeneralButton({
   return (
     <button
       type={type}
-      onClick={onClick}
+      onClick={(e) => onClick?.(e)}
       className={[
         "inline-flex flex gap-x-1 items-center justify-center rounded-md px-4 py-2 text-sm font-semibold",
         "bg-button-secondary-bg text-button-secondary-text shadow-soft",
@@ -27,63 +27,39 @@ export function GeneralButton({
   );
 }
 
-export function ApproveButton({ isApproved = false, onApproved }) {
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-
-  const toggleDropdown = () => setDropdownOpen((v) => !v);
-
-  const handleSelection = (status) => {
-    onApproved(status);
-    setDropdownOpen(false);
+export function DropdownButton({ onSelect, options, value }) {
+  const STATUS_COLOR = {
+    submitted: "bg-submitted",
+    approved: "bg-approved",
+    rejected: "bg-rejected",
+    revised: "bg-revised",
   };
-
   return (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={toggleDropdown}
+    <div className="relative inline-block">
+      <select
+        value={value}
+        onChange={(e) => onSelect && onSelect(e.target.value)}
         className={[
-          "inline-flex items-center gap-x-1 rounded-md px-2 py-1",
-          "text-white text-sm font-semibold shadow-soft",
-          "cursor-pointer transition focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)]",
-          isApproved
-            ? "bg-success hover:opacity-90"
-            : "bg-danger hover:opacity-90",
+          "appearance-none",
+          "rounded-md px-2 py-1 pr-6",
+          "text-white text-sm font-semibold",
+          "shadow-soft cursor-pointer",
+          "focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)]",
+          STATUS_COLOR[value],
         ].join(" ")}
-        aria-expanded={dropdownOpen}
       >
-        <span>{isApproved ? "Approved" : "Rejected"}</span>
-        {isApproved ? (
-          <RiArrowDownSLine className="text-white cursor-pointer" />
-        ) : (
-          <RiArrowUpSLine className="text-white cursor-pointer" />
-        )}
-      </button>
+        {options.map((option) => (
+          <option
+            key={option.key}
+            value={option.key}
+            disabled={option.disabled}
+          >
+            {option.label}
+          </option>
+        ))}
+      </select>
 
-      {dropdownOpen && (
-        <div className="absolute right-0 mt-2 w-36 overflow-hidden rounded-md border border-border bg-secondary-soft shadow-lg">
-          <ul className="text-sm">
-            <li>
-              <button
-                type="button"
-                onClick={() => handleSelection(true)}
-                className="cursor-pointer w-full px-4 py-2 text-left text-text-primary bg-secondary-background hover:bg-secondary-soft transition"
-              >
-                Approve
-              </button>
-            </li>
-            <li>
-              <button
-                type="button"
-                onClick={() => handleSelection(false)}
-                className="cursor-pointer w-full px-4 py-2 text-left text-text-primary bg-secondary-background hover:bg-secondary-soft transition"
-              >
-                Unapprove
-              </button>
-            </li>
-          </ul>
-        </div>
-      )}
+      <RiArrowDownSLine className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-white" />
     </div>
   );
 }
@@ -100,15 +76,15 @@ export function TabsButton({ tabs, activeTab, setActiveTab }) {
       ].join(" ")}
     >
       {tabs.map((tab, idx) => {
-        const isActive = activeTab === tab.key;
+        const isActive = activeTab === tab.id;
         const isFirst = idx === 0;
         const isLast = idx === tabs.length - 1;
 
         return (
           <button
-            key={tab.key}
+            key={tab.id}
             type="button"
-            onClick={() => setActiveTab(tab.key)}
+            onClick={() => setActiveTab(tab.id)}
             className={[
               "flex-1",
               "cursor-pointer px-5 py-2 text-sm font-semibold transition",

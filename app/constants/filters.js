@@ -1,24 +1,24 @@
 export const ADMIN_TABS = [
-  { key: "klapanunggal", label: "Klapanunggal" },
-  { key: "lido", label: "Lido" },
-  { key: "padalarang", label: "Padalarang" },
-  { key: "indramayu", label: "Indramayu" },
+  { id: "klapanunggal", label: "Klapanunggal" },
+  { id: "lido", label: "Lido" },
+  { id: "padalarang", label: "Padalarang" },
+  { id: "indramayu", label: "Indramayu" },
 ];
 
 export const LOCATION_FILTER = [
   {
     label: "Semua",
-    key: "all",
+    id: "all",
     disabled: false,
   },
   {
-    label: "Klapanunggal",
-    key: "klapanunggal",
+    label: "Bandung",
+    id: "BDG",
     disabled: false,
   },
   {
-    label: "Padalarang",
-    key: "padalarang",
+    label: "Bogor",
+    id: "BGR",
     disabled: false,
   },
 ];
@@ -26,40 +26,37 @@ export const LOCATION_FILTER = [
 export const ROLES_FILTER = [
   {
     label: "Semua",
-    key: "all",
+    id: "all",
     disabled: false,
   },
   {
     label: "Grower",
-    key: "grower",
+    id: "grower",
     disabled: false,
   },
   {
     label: "Water Expert",
-    key: "water_expert",
+    id: "water expert",
     disabled: false,
   },
   {
     label: "Field Assistant",
-    key: "field_assistant",
+    id: "field assistant",
     disabled: false,
   },
 ];
 
-export const STATUS_FILTER = [
-  {
-    label: "Semua",
-    key: "all",
-    disabled: false,
-  },
-  {
-    label: "approved",
-    key: "approved",
-    disabled: false,
-  },
-  {
-    label: "unapproved",
-    key: "unapproved",
-    disabled: false,
-  },
+export const REPORT_STATUS_FILTER = [
+  { label: "Semua", id: "all", disabled: false },
+  { label: "Submitted", id: "submitted", disabled: false },
+  { label: "Approved", id: "approved", disabled: false },
+  { label: "Rejected", id: "rejected", disabled: false },
+  { label: "Revised", id: "revised", disabled: false },
+];
+
+export const GREENHOUSE_FILTER = [
+  { label: "Padalarang - BDG", id: "PDLG", disabled: false },
+  { label: "Klapanunggal - BDG", id: "KPGL", disabled: false },
+  { label: "Lido - BGR", id: "LIDO", disabled: false },
+  { label: "Indramayu - BGR", id: "IDMY", disabled: false },
 ];
