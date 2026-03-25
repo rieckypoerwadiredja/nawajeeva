@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "next build",
+    "vercel-build": "prisma generate && prisma migrate deploy && next build",
     "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint"
@@ -16,6 +17,7 @@
   "dependencies": {
     "@prisma/client": "^7.5.0",
     "@supabase/supabase-js": "^2.99.2",
+    "@vercel/functions": "^3.4.3",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
     "browser-image-compression": "^2.0.2",
