@@ -1,6 +1,8 @@
 import { prisma } from "@/app/utils/prisma";
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const brands = await prisma.nutrition_brand.findMany({

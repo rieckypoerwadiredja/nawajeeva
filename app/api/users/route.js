@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req) {
   // const session = await getServerSession(authOptions);
   // if (!session || session?.user?.roleCode !== "ADM") {
@@ -182,7 +184,8 @@ export async function POST(req) {
       String(now.getMinutes()).padStart(2, "0") +
       String(now.getSeconds()).padStart(2, "0");
     const code =
-      body.code || `${roleCode}-${greenhouseCodes}-${locationCodes}-${timestamp}`;
+      body.code ||
+      `${roleCode}-${greenhouseCodes}-${locationCodes}-${timestamp}`;
 
     // Default statusId to 1 (active) if not provided
     const statusId = body.statusId ? parseInt(body.statusId) : 1;

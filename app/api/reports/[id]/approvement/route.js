@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/app/utils/prisma";
 
+export const dynamic = "force-dynamic";
 export async function PUT(req, context) {
   // const session = await getServerSession(authOptions);
   // if (!session || !["ADM"].includes(session?.user?.roleCode)) {

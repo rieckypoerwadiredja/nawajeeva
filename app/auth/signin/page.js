@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { IMAGES } from "@/app/constants/images"; // Make sure path is correct
 
+export const dynamic = "force-dynamic";
+
 export default function SignIn() {
   const router = useRouter();
   const [data, setData] = useState({ email: "", password: "" });
