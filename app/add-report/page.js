@@ -1,5 +1,5 @@
 import AddReport from "@/app/components/layouts/AddReport";
-import { API_BASE_URL } from "@/app/constants/env";
+import { prisma } from "@/app/utils/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
@@ -20,8 +20,20 @@ export default async function page() {
   // }
 
   try {
-    const resBrand = await fetch(`${API_BASE_URL}/brands`);
-    const brands = await resBrand.json();
+    const brandsData = await prisma.nutrition_brand.findMany({
+      select: {
+        id: true,
+        code: true,
+        name: true,
+        type: {
+          select: {
+            id: true,
+            code: true,
+            name: true,
+          },
+        },
+      },
+    });
 
     const user = {
       id: 1,
@@ -44,11 +56,7 @@ export default async function page() {
       },
     };
 
-    if (brands.status !== "success") {
-      throw new Error(brands.message);
-    }
-
-    return <AddReport data={{ brands: brands.data, user: user }} />;
+    return <AddReport data={{ brands: brandsData, user: user }} />;
   } catch (error) {
     console.error(error);
     throw new Error(error.message);
