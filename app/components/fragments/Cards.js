@@ -8,6 +8,7 @@ import { RiCloseLine } from "react-icons/ri";
 import { formatDate, formatWIB } from "@/app/utils/number";
 import { REPORT_STATUS } from "@/app/constants/type";
 import callApi from "@/app/utils/callApi";
+import { cn } from "@/app/utils/cn";
 
 export function GeneralCard({ title, className, children }) {
   return (
@@ -161,5 +162,57 @@ export function ReportCard({ data, refetchReports }) {
         </div>
       </div>
     </GeneralCard>
+  );
+}
+
+export function KPICard({ icon: Icon, label, value, unit, trend, colorClass }) {
+  return (
+    <div className="bg-surface-container-lowest p-6 rounded-xl space-y-4 shadow-sm">
+      <div className="flex justify-between items-start">
+        <div className={cn("p-2 rounded-lg", colorClass)}>
+          <Icon className="w-5 h-5" />
+        </div>
+        <span
+          className={cn(
+            "text-xs font-bold px-2 py-1 rounded-full",
+            colorClass.replace("bg-", "text-").replace("/30", ""),
+          )}
+        >
+          {trend}
+        </span>
+      </div>
+      <div className="space-y-1">
+        <p className="text-xs font-medium text-on-surface-variant">{label}</p>
+        <h2 className="text-3xl font-bold headline text-on-surface">
+          {value}{" "}
+          <span className="text-sm font-normal text-on-surface-variant">
+            {unit}
+          </span>
+        </h2>
+      </div>
+    </div>
+  );
+}
+
+export function WeatherCard({ icon: Icon, label, value, unit, colorClass }) {
+  return (
+    <div className="bg-surface-container-lowest p-6 rounded-xl flex items-center gap-6 shadow-sm">
+      <div
+        className={cn(
+          "w-16 h-16 rounded-2xl flex items-center justify-center",
+          colorClass,
+        )}
+      >
+        <Icon className="w-8 h-8" />
+      </div>
+      <div>
+        <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">
+          {label}
+        </p>
+        <h4 className="text-4xl font-extrabold headline text-on-surface">
+          {value} <span className="text-lg font-medium">{unit}</span>
+        </h4>
+      </div>
+    </div>
   );
 }

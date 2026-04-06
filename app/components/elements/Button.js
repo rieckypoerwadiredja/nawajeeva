@@ -27,7 +27,13 @@ export function GeneralButton({
   );
 }
 
-export function DropdownButton({ onSelect, options, value }) {
+export function DropdownButton({
+  onSelect,
+  options,
+  value,
+  className = "",
+  classNameIcon = "",
+}) {
   const STATUS_COLOR = {
     submitted: "bg-submitted",
     approved: "bg-approved",
@@ -46,6 +52,7 @@ export function DropdownButton({ onSelect, options, value }) {
           "shadow-soft cursor-pointer",
           "focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)]",
           STATUS_COLOR[value],
+          className,
         ].join(" ")}
       >
         {options.map((option) => (
@@ -59,7 +66,9 @@ export function DropdownButton({ onSelect, options, value }) {
         ))}
       </select>
 
-      <RiArrowDownSLine className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-white" />
+      <RiArrowDownSLine
+        className={`pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-white ${classNameIcon}`}
+      />
     </div>
   );
 }
